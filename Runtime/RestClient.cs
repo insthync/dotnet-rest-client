@@ -3,14 +3,14 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Networking;
 
-namespace UnityRestClient
+namespace DotNetRestClient
 {
-    public class RestClient : MonoBehaviour
+    public class RestClient
     {
         public static bool DoNotCountNextRequest { get; set; }
         public static int PostLoadCount { get; private set; }
@@ -19,6 +19,12 @@ namespace UnityRestClient
         public static int DeleteLoadCount { get; private set; }
         public static int GetLoadCount { get; private set; }
         public static int LoadCount { get { return PostLoadCount + PatchLoadCount + PutLoadCount + DeleteLoadCount + GetLoadCount; } }
+
+        public static readonly SocketsHttpHandler httoClientHandler = new SocketsHttpHandler()
+        {
+            MaxConnectionsPerServer = 32,
+        };
+        public static HttpClient HttpClient = new HttpClient(httoClientHandler);
 
         public static readonly string JsonContentType = "application/json";
         public static JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings()
@@ -199,10 +205,10 @@ namespace UnityRestClient
 
         public static async Task<Result> Get(string url, string authorizationToken)
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEBUG
             uint id = GetNextDebugId();
             bool errorLogged = false;
-            Debug.Log($"Get request {id} {url}");
+            Console.WriteLine($"Get request {id} {url}");
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
@@ -212,51 +218,40 @@ namespace UnityRestClient
             string error = string.Empty;
             if (!doNotCountNextRequest)
                 GetLoadCount++;
-            using (UnityWebRequest webRequest = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET))
+            using (var webRequest = new HttpRequestMessage(HttpMethod.Get, url))
             {
-                webRequest.certificateHandler = new SimpleWebRequestCert();
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.Log($"Get {id} with authorization token {authorizationToken}");
+#if DEBUG
+                    Console.WriteLine($"Get {id} with authorization token {authorizationToken}");
 #endif
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
+                    webRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
                 }
-                webRequest.downloadHandler = new DownloadHandlerBuffer();
+
                 try
                 {
-                    UnityWebRequestAsyncOperation ayncOp = webRequest.SendWebRequest();
-                    while (!ayncOp.isDone)
-                    {
-                        await Task.Yield();
-                    }
+                    var webResponse = await HttpClient.SendAsync(webRequest);
+                    responseCode = (long)webResponse.StatusCode;
+                    isHttpError = !webResponse.IsSuccessStatusCode;
+                    stringContent = await webRequest.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.LogError($"Get error {id} catched {ex}");
+#if DEBUG
+                    Console.Error.WriteLine($"Get error {id} catched {ex}");
                     errorLogged = true;
 #else
-                    Debug.LogException(ex);
+                    Console.Error.WriteLine(ex);
 #endif
+                    isNetworkError = true;
+                    error = ex.Message;
                 }
-                responseCode = webRequest.responseCode;
-#if UNITY_2020_2_OR_NEWER
-                isHttpError = webRequest.result == UnityWebRequest.Result.ProtocolError;
-                isNetworkError = webRequest.result == UnityWebRequest.Result.ConnectionError;
-#else
-                isHttpError = webRequest.isHttpError;
-                isNetworkError = webRequest.isNetworkError;
-#endif
-                if (!isNetworkError)
-                    stringContent = webRequest.downloadHandler.text;
-                else
-                    error = webRequest.error;
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+
+#if DEBUG
                 if ((isHttpError || isNetworkError) && !errorLogged)
-                    Debug.LogError($"Get error {id} {stringContent}");
+                    Console.Error.WriteLine($"Get error {id} {stringContent}");
                 else
-                    Debug.Log($"Get success {id} {responseCode} {stringContent}");
+                    Console.WriteLine($"Get success {id} {responseCode} {stringContent}");
 #endif
             }
             if (!doNotCountNextRequest)
@@ -282,10 +277,10 @@ namespace UnityRestClient
 
         public static async Task<Result> Delete(string url, string authorizationToken)
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEBUG
             uint id = GetNextDebugId();
             bool errorLogged = false;
-            Debug.Log($"Delete request {id} {url}");
+            Console.WriteLine($"Delete request {id} {url}");
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
@@ -295,51 +290,39 @@ namespace UnityRestClient
             string error = string.Empty;
             if (!doNotCountNextRequest)
                 DeleteLoadCount++;
-            using (UnityWebRequest webRequest = new UnityWebRequest(url, UnityWebRequest.kHttpVerbDELETE))
+            using (var webRequest = new HttpRequestMessage(HttpMethod.Delete, url))
             {
-                webRequest.certificateHandler = new SimpleWebRequestCert();
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.Log($"Delete {id} with authorization token {authorizationToken}");
+#if DEBUG
+                    Console.WriteLine($"Delete {id} with authorization token {authorizationToken}");
 #endif
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
+                    webRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
                 }
-                webRequest.downloadHandler = new DownloadHandlerBuffer();
                 try
                 {
-                    UnityWebRequestAsyncOperation ayncOp = webRequest.SendWebRequest();
-                    while (!ayncOp.isDone)
-                    {
-                        await Task.Yield();
-                    }
+                    var webResponse = await HttpClient.SendAsync(webRequest);
+                    responseCode = (long)webResponse.StatusCode;
+                    isHttpError = !webResponse.IsSuccessStatusCode;
+                    stringContent = await webRequest.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.LogError($"Delete error {id} catched {ex}");
+#if DEBUG
+                    Console.Error.WriteLine($"Delete error {id} catched {ex}");
                     errorLogged = true;
 #else
-                    Debug.LogException(ex);
+                    Console.Error.WriteLine(ex);
 #endif
+                    isNetworkError = true;
+                    error = ex.Message;
                 }
-                responseCode = webRequest.responseCode;
-#if UNITY_2020_2_OR_NEWER
-                isHttpError = webRequest.result == UnityWebRequest.Result.ProtocolError;
-                isNetworkError = webRequest.result == UnityWebRequest.Result.ConnectionError;
-#else
-                isHttpError = webRequest.isHttpError;
-                isNetworkError = webRequest.isNetworkError;
-#endif
-                if (!isNetworkError)
-                    stringContent = webRequest.downloadHandler.text;
-                else
-                    error = webRequest.error;
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+
+#if DEBUG
                 if ((isHttpError || isNetworkError) && !errorLogged)
-                    Debug.LogError($"Delete error {id} {stringContent}");
+                    Console.Error.WriteLine($"Delete error {id} {stringContent}");
                 else
-                    Debug.Log($"Delete success {id} {responseCode} {stringContent}");
+                    Console.WriteLine($"Delete success {id} {responseCode} {stringContent}");
 #endif
             }
             if (!doNotCountNextRequest)
@@ -360,10 +343,10 @@ namespace UnityRestClient
 
         public static async Task<Result> Post(string url, string contentType, string data, string authorizationToken)
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEBUG
             uint id = GetNextDebugId();
             bool errorLogged = false;
-            Debug.Log($"Post request {id} {url} {data}");
+            Console.WriteLine($"Post request {id} {url} {data}");
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
@@ -373,53 +356,40 @@ namespace UnityRestClient
             string error = string.Empty;
             if (!doNotCountNextRequest)
                 PostLoadCount++;
-            using (UnityWebRequest webRequest = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
+            using (var webRequest = new HttpRequestMessage(HttpMethod.Post, url))
             {
-                webRequest.certificateHandler = new SimpleWebRequestCert();
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.Log($"Post {id} with authorization token {authorizationToken}");
+#if DEBUG
+                    Console.WriteLine($"Post {id} with authorization token {authorizationToken}");
 #endif
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
+                    webRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
                 }
-                webRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(data.ToCharArray()));
-                webRequest.uploadHandler.contentType = contentType;
-                webRequest.downloadHandler = new DownloadHandlerBuffer();
+                webRequest.Content = new StringContent(data, Encoding.UTF8, contentType);
                 try
                 {
-                    UnityWebRequestAsyncOperation ayncOp = webRequest.SendWebRequest();
-                    while (!ayncOp.isDone)
-                    {
-                        await Task.Yield();
-                    }
+                    var webResponse = await HttpClient.SendAsync(webRequest);
+                    responseCode = (long)webResponse.StatusCode;
+                    isHttpError = !webResponse.IsSuccessStatusCode;
+                    stringContent = await webRequest.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.LogError($"Post error {id} catched {ex}");
+#if DEBUG
+                    Console.Error.WriteLine($"Post error {id} catched {ex}");
                     errorLogged = true;
 #else
-                    Debug.LogException(ex);
+                    Console.Error.WriteLine(ex);
 #endif
+                    isNetworkError = true;
+                    error = ex.Message;
                 }
-                responseCode = webRequest.responseCode;
-#if UNITY_2020_2_OR_NEWER
-                isHttpError = webRequest.result == UnityWebRequest.Result.ProtocolError;
-                isNetworkError = webRequest.result == UnityWebRequest.Result.ConnectionError;
-#else
-                isHttpError = webRequest.isHttpError;
-                isNetworkError = webRequest.isNetworkError;
-#endif
-                if (!isNetworkError)
-                    stringContent = webRequest.downloadHandler.text;
-                else
-                    error = webRequest.error;
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+
+#if DEBUG
                 if ((isHttpError || isNetworkError) && !errorLogged)
-                    Debug.LogError($"Post error {id} {stringContent}");
+                    Console.Error.WriteLine($"Post error {id} {stringContent}");
                 else
-                    Debug.Log($"Post success {id} {responseCode} {stringContent}");
+                    Console.WriteLine($"Post success {id} {responseCode} {stringContent}");
 #endif
             }
             if (!doNotCountNextRequest)
@@ -440,10 +410,10 @@ namespace UnityRestClient
 
         public static async Task<Result> Patch(string url, string contentType, string data, string authorizationToken)
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEBUG
             uint id = GetNextDebugId();
             bool errorLogged = false;
-            Debug.Log($"Patch request {id} {url} {data}");
+            Console.WriteLine($"Patch request {id} {url} {data}");
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
@@ -453,53 +423,40 @@ namespace UnityRestClient
             string error = string.Empty;
             if (!doNotCountNextRequest)
                 PatchLoadCount++;
-            using (UnityWebRequest webRequest = new UnityWebRequest(url, "PATCH"))
+            using (var webRequest = new HttpRequestMessage(HttpMethod.Patch, url))
             {
-                webRequest.certificateHandler = new SimpleWebRequestCert();
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.Log($"Patch {id} with authorization token {authorizationToken}");
+#if DEBUG
+                    Console.WriteLine($"Patch {id} with authorization token {authorizationToken}");
 #endif
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
+                    webRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
                 }
-                webRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(data.ToCharArray()));
-                webRequest.uploadHandler.contentType = contentType;
-                webRequest.downloadHandler = new DownloadHandlerBuffer();
+                webRequest.Content = new StringContent(data, Encoding.UTF8, contentType);
                 try
                 {
-                    UnityWebRequestAsyncOperation ayncOp = webRequest.SendWebRequest();
-                    while (!ayncOp.isDone)
-                    {
-                        await Task.Yield();
-                    }
+                    var webResponse = await HttpClient.SendAsync(webRequest);
+                    responseCode = (long)webResponse.StatusCode;
+                    isHttpError = !webResponse.IsSuccessStatusCode;
+                    stringContent = await webRequest.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.LogError($"Patch error {id} catched {ex}");
+#if DEBUG
+                    Console.Error.WriteLine($"Patch error {id} catched {ex}");
                     errorLogged = true;
 #else
-                    Debug.LogException(ex);
+                    Console.Error.WriteLine(ex);
 #endif
+                    isNetworkError = true;
+                    error = ex.Message;
                 }
-                responseCode = webRequest.responseCode;
-#if UNITY_2020_2_OR_NEWER
-                isHttpError = webRequest.result == UnityWebRequest.Result.ProtocolError;
-                isNetworkError = webRequest.result == UnityWebRequest.Result.ConnectionError;
-#else
-                isHttpError = webRequest.isHttpError;
-                isNetworkError = webRequest.isNetworkError;
-#endif
-                if (!isNetworkError)
-                    stringContent = webRequest.downloadHandler.text;
-                else
-                    error = webRequest.error;
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+
+#if DEBUG
                 if ((isHttpError || isNetworkError) && !errorLogged)
-                    Debug.LogError($"Patch error {id} {stringContent}");
+                    Console.Error.WriteLine($"Patch error {id} {stringContent}");
                 else
-                    Debug.Log($"Patch success {id} {responseCode} {stringContent}");
+                    Console.WriteLine($"Patch success {id} {responseCode} {stringContent}");
 #endif
             }
             if (!doNotCountNextRequest)
@@ -520,10 +477,10 @@ namespace UnityRestClient
 
         public static async Task<Result> Put(string url, string contentType, string data, string authorizationToken)
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEBUG
             uint id = GetNextDebugId();
             bool errorLogged = false;
-            Debug.Log($"Put request {id} {url} {data}");
+            Console.WriteLine($"Put request {id} {url} {data}");
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
@@ -533,53 +490,40 @@ namespace UnityRestClient
             string error = string.Empty;
             if (!doNotCountNextRequest)
                 PutLoadCount++;
-            using (UnityWebRequest webRequest = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPUT))
+            using (var webRequest = new HttpRequestMessage(HttpMethod.Put, url))
             {
-                webRequest.certificateHandler = new SimpleWebRequestCert();
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.Log($"Put {id} with authorization token {authorizationToken}");
+#if DEBUG
+                    Console.WriteLine($"Put {id} with authorization token {authorizationToken}");
 #endif
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
+                    webRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
                 }
-                webRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(data.ToCharArray()));
-                webRequest.uploadHandler.contentType = contentType;
-                webRequest.downloadHandler = new DownloadHandlerBuffer();
+                webRequest.Content = new StringContent(data, Encoding.UTF8, contentType);
                 try
                 {
-                    UnityWebRequestAsyncOperation ayncOp = webRequest.SendWebRequest();
-                    while (!ayncOp.isDone)
-                    {
-                        await Task.Yield();
-                    }
+                    var webResponse = await HttpClient.SendAsync(webRequest);
+                    responseCode = (long)webResponse.StatusCode;
+                    isHttpError = !webResponse.IsSuccessStatusCode;
+                    stringContent = await webRequest.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-                    Debug.LogError($"Put error {id} catched {ex}");
+#if DEBUG
+                    Console.Error.WriteLine($"Put error {id} catched {ex}");
                     errorLogged = true;
 #else
-                    Debug.LogException(ex);
+                    Console.Error.WriteLine(ex);
 #endif
+                    isNetworkError = true;
+                    error = ex.Message;
                 }
-                responseCode = webRequest.responseCode;
-#if UNITY_2020_2_OR_NEWER
-                isHttpError = webRequest.result == UnityWebRequest.Result.ProtocolError;
-                isNetworkError = webRequest.result == UnityWebRequest.Result.ConnectionError;
-#else
-                isHttpError = webRequest.isHttpError;
-                isNetworkError = webRequest.isNetworkError;
-#endif
-                if (!isNetworkError)
-                    stringContent = webRequest.downloadHandler.text;
-                else
-                    error = webRequest.error;
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+
+#if DEBUG
                 if ((isHttpError || isNetworkError) && !errorLogged)
-                    Debug.LogError($"Put error {id} {stringContent}");
+                    Console.Error.WriteLine($"Put error {id} {stringContent}");
                 else
-                    Debug.Log($"Put success {id} {responseCode} {stringContent}");
+                    Console.WriteLine($"Put success {id} {responseCode} {stringContent}");
 #endif
             }
             if (!doNotCountNextRequest)
@@ -730,7 +674,7 @@ namespace UnityRestClient
                     catch (Exception ex)
                     {
                         // It may not able to deserialize
-                        Debug.LogError($"Can't deserialize content: {stringContent}, {ex}");
+                        Console.Error.WriteLine($"Can't deserialize content: {stringContent}, {ex}");
                     }
                 }
                 if (IsHttpError && string.IsNullOrEmpty(Error))
