@@ -212,8 +212,8 @@ namespace DotNetRestClient
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
-            bool isHttpError = true;
-            bool isNetworkError = true;
+            bool isHttpError = false;
+            bool isNetworkError = false;
             string stringContent = string.Empty;
             string error = string.Empty;
             if (!doNotCountNextRequest)
@@ -284,8 +284,8 @@ namespace DotNetRestClient
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
-            bool isHttpError = true;
-            bool isNetworkError = true;
+            bool isHttpError = false;
+            bool isNetworkError = false;
             string stringContent = string.Empty;
             string error = string.Empty;
             if (!doNotCountNextRequest)
@@ -350,8 +350,8 @@ namespace DotNetRestClient
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
-            bool isHttpError = true;
-            bool isNetworkError = true;
+            bool isHttpError = false;
+            bool isNetworkError = false;
             string stringContent = string.Empty;
             string error = string.Empty;
             if (!doNotCountNextRequest)
@@ -417,8 +417,8 @@ namespace DotNetRestClient
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
-            bool isHttpError = true;
-            bool isNetworkError = true;
+            bool isHttpError = false;
+            bool isNetworkError = false;
             string stringContent = string.Empty;
             string error = string.Empty;
             if (!doNotCountNextRequest)
@@ -484,8 +484,8 @@ namespace DotNetRestClient
 #endif
             bool doNotCountNextRequest = DoNotCountNextRequest;
             long responseCode = -1;
-            bool isHttpError = true;
-            bool isNetworkError = true;
+            bool isHttpError = false;
+            bool isNetworkError = false;
             string stringContent = string.Empty;
             string error = string.Empty;
             if (!doNotCountNextRequest)
