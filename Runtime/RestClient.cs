@@ -233,7 +233,7 @@ namespace DotNetRestClient
                     var webResponse = await HttpClient.SendAsync(webRequest);
                     responseCode = (long)webResponse.StatusCode;
                     isHttpError = !webResponse.IsSuccessStatusCode;
-                    stringContent = await webRequest.Content.ReadAsStringAsync();
+                    stringContent = await webResponse.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
@@ -304,7 +304,7 @@ namespace DotNetRestClient
                     var webResponse = await HttpClient.SendAsync(webRequest);
                     responseCode = (long)webResponse.StatusCode;
                     isHttpError = !webResponse.IsSuccessStatusCode;
-                    stringContent = await webRequest.Content.ReadAsStringAsync();
+                    stringContent = await webResponse.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
@@ -371,7 +371,7 @@ namespace DotNetRestClient
                     var webResponse = await HttpClient.SendAsync(webRequest);
                     responseCode = (long)webResponse.StatusCode;
                     isHttpError = !webResponse.IsSuccessStatusCode;
-                    stringContent = await webRequest.Content.ReadAsStringAsync();
+                    stringContent = await webResponse.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
@@ -438,7 +438,7 @@ namespace DotNetRestClient
                     var webResponse = await HttpClient.SendAsync(webRequest);
                     responseCode = (long)webResponse.StatusCode;
                     isHttpError = !webResponse.IsSuccessStatusCode;
-                    stringContent = await webRequest.Content.ReadAsStringAsync();
+                    stringContent = await webResponse.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
@@ -505,7 +505,7 @@ namespace DotNetRestClient
                     var webResponse = await HttpClient.SendAsync(webRequest);
                     responseCode = (long)webResponse.StatusCode;
                     isHttpError = !webResponse.IsSuccessStatusCode;
-                    stringContent = await webRequest.Content.ReadAsStringAsync();
+                    stringContent = await webResponse.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
