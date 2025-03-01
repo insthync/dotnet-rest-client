@@ -57,6 +57,17 @@ namespace DotNetRestClient
             public string Data { get; set; }
         }
 
+        public static void SetHeaders(HttpRequestMessage webRequest, Dictionary<string, string> headers)
+        {
+            if (headers == null || headers.Count == 0)
+                return;
+            foreach (var header in headers)
+            {
+                webRequest.Headers.Remove(header.Key);
+                webRequest.Headers.Add(header.Key, header.Value);
+            }
+        }
+
         public static RequestContent GetJsonContent(object data)
         {
             if (data == null)
@@ -136,10 +147,24 @@ namespace DotNetRestClient
             return await Get<TResponse>(url, new Dictionary<string, object>(), authorizationToken);
         }
 
-        public static async Task<Result<TResponse>> Get<TResponse>(string url, Dictionary<string, object> queries, string authorizationToken)
+        public static async Task<Result<TResponse>> Get<TResponse>(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Get<TResponse>(url, new Dictionary<string, object>(), authorizationToken, authHeaderSettings);
+        }
+
+        public static async Task<Result<TResponse>> Get<TResponse>(string url, Dictionary<string, object> queries,
+            string authorizationToken)
         {
             Result result = await Get(url, queries, authorizationToken);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Get<TResponse>(string url, Dictionary<string, object> queries,
+            string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Get(url, queries, authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result<TResponse>> Delete<TResponse>(string url)
@@ -157,10 +182,25 @@ namespace DotNetRestClient
             return await Delete<TResponse>(url, new Dictionary<string, object>(), authorizationToken);
         }
 
-        public static async Task<Result<TResponse>> Delete<TResponse>(string url, Dictionary<string, object> queries, string authorizationToken)
+        public static async Task<Result<TResponse>> Delete<TResponse>(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Delete<TResponse>(url, new Dictionary<string, object>(), authorizationToken,
+                authHeaderSettings);
+        }
+
+        public static async Task<Result<TResponse>> Delete<TResponse>(string url, Dictionary<string, object> queries,
+            string authorizationToken)
         {
             Result result = await Delete(url, queries, authorizationToken);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Delete<TResponse>(string url, Dictionary<string, object> queries,
+            string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Delete(url, queries, authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result<TResponse>> Post<TForm, TResponse>(string url, TForm data)
@@ -168,16 +208,31 @@ namespace DotNetRestClient
             return await Post<TForm, TResponse>(url, data, string.Empty);
         }
 
-        public static async Task<Result<TResponse>> Post<TForm, TResponse>(string url, TForm data, string authorizationToken)
+        public static async Task<Result<TResponse>> Post<TForm, TResponse>(string url, TForm data,
+            string authorizationToken)
         {
             Result result = await Post(url, data, authorizationToken);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Post<TForm, TResponse>(string url, TForm data,
+            string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Post(url, data, authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result<TResponse>> Post<TResponse>(string url, string authorizationToken)
         {
             Result result = await Post(url, GetJsonContent(null), authorizationToken, BearerAuthHeaderSettings);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Post<TResponse>(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Post(url, GetJsonContent(null), authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result> Post(string url, string authorizationToken)
@@ -185,21 +240,42 @@ namespace DotNetRestClient
             return await Post(url, GetJsonContent(null), authorizationToken, BearerAuthHeaderSettings);
         }
 
+        public static async Task<Result> Post(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Post(url, GetJsonContent(null), authorizationToken, authHeaderSettings);
+        }
+
         public static async Task<Result<TResponse>> Patch<TForm, TResponse>(string url, TForm data)
         {
             return await Patch<TForm, TResponse>(url, data, string.Empty);
         }
 
-        public static async Task<Result<TResponse>> Patch<TForm, TResponse>(string url, TForm data, string authorizationToken)
+        public static async Task<Result<TResponse>> Patch<TForm, TResponse>(string url, TForm data,
+            string authorizationToken)
         {
             Result result = await Patch(url, data, authorizationToken);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Patch<TForm, TResponse>(string url, TForm data,
+            string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Patch(url, data, authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result<TResponse>> Patch<TResponse>(string url, string authorizationToken)
         {
             Result result = await Patch(url, GetJsonContent(null), authorizationToken, BearerAuthHeaderSettings);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Patch<TResponse>(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Patch(url, GetJsonContent(null), authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result> Patch(string url, string authorizationToken)
@@ -207,26 +283,53 @@ namespace DotNetRestClient
             return await Patch(url, GetJsonContent(null), authorizationToken, BearerAuthHeaderSettings);
         }
 
+        public static async Task<Result> Patch(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Patch(url, GetJsonContent(null), authorizationToken, authHeaderSettings);
+        }
+
         public static async Task<Result<TResponse>> Put<TForm, TResponse>(string url, TForm data)
         {
             return await Put<TForm, TResponse>(url, data, string.Empty);
         }
 
-        public static async Task<Result<TResponse>> Put<TForm, TResponse>(string url, TForm data, string authorizationToken)
+        public static async Task<Result<TResponse>> Put<TForm, TResponse>(string url, TForm data,
+            string authorizationToken)
         {
             Result result = await Put(url, data, authorizationToken);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Put<TForm, TResponse>(string url, TForm data,
+            string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Put(url, data, authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result<TResponse>> Put<TResponse>(string url, string authorizationToken)
         {
             Result result = await Put(url, GetJsonContent(null), authorizationToken, BearerAuthHeaderSettings);
-            return new Result<TResponse>(result.ResponseCode, result.IsHttpError, result.IsNetworkError, result.StringContent, result.Error);
+            return new Result<TResponse>(result);
+        }
+
+        public static async Task<Result<TResponse>> Put<TResponse>(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            Result result = await Put(url, GetJsonContent(null), authorizationToken, authHeaderSettings);
+            return new Result<TResponse>(result);
         }
 
         public static async Task<Result> Put(string url, string authorizationToken)
         {
             return await Put(url, GetJsonContent(null), authorizationToken, BearerAuthHeaderSettings);
+        }
+
+        public static async Task<Result> Put(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Put(url, GetJsonContent(null), authorizationToken, authHeaderSettings);
         }
 
         public static async Task<Result> Get(string url)
@@ -244,7 +347,20 @@ namespace DotNetRestClient
             return await Get(url + GetQueryString(queries), authorizationToken, BearerAuthHeaderSettings);
         }
 
-        public static async Task<Result> Get(string url, string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        public static async Task<Result> Get(string url, Dictionary<string, object> queries, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Get(url + GetQueryString(queries), authorizationToken, authHeaderSettings);
+        }
+
+        public static async Task<Result> Get(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Get(url, authorizationToken, authHeaderSettings, null);
+        }
+
+        public static async Task<Result> Get(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings, Dictionary<string, string> headers)
         {
 #if DEBUG
             uint id = GetNextDebugId();
@@ -261,6 +377,7 @@ namespace DotNetRestClient
                 GetLoadCount++;
             using (var webRequest = new HttpRequestMessage(HttpMethod.Get, url))
             {
+                SetHeaders(webRequest, headers);
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
 #if DEBUG
@@ -299,7 +416,8 @@ namespace DotNetRestClient
             if (!doNotCountNextRequest)
                 GetLoadCount--;
             DoNotCountNextRequest = false;
-            return new Result(responseCode, isHttpError, isNetworkError, stringContent, error);
+            return new Result(url, "GET", default, authorizationToken, authHeaderSettings, responseCode, isHttpError,
+                isNetworkError, stringContent, error);
         }
 
         public static async Task<Result> Delete(string url)
@@ -312,12 +430,26 @@ namespace DotNetRestClient
             return await Delete(url, queries, string.Empty);
         }
 
-        public static async Task<Result> Delete(string url, Dictionary<string, object> queries, string authorizationToken)
+        public static async Task<Result> Delete(string url, Dictionary<string, object> queries,
+            string authorizationToken)
         {
             return await Delete(url + GetQueryString(queries), authorizationToken, BearerAuthHeaderSettings);
         }
 
-        public static async Task<Result> Delete(string url, string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        public static async Task<Result> Delete(string url, Dictionary<string, object> queries,
+            string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        {
+            return await Delete(url + GetQueryString(queries), authorizationToken, authHeaderSettings);
+        }
+
+        public static async Task<Result> Delete(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Delete(url, authorizationToken, authHeaderSettings, null);
+        }
+
+        public static async Task<Result> Delete(string url, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings, Dictionary<string, string> headers)
         {
 #if DEBUG
             uint id = GetNextDebugId();
@@ -334,6 +466,7 @@ namespace DotNetRestClient
                 DeleteLoadCount++;
             using (var webRequest = new HttpRequestMessage(HttpMethod.Delete, url))
             {
+                SetHeaders(webRequest, headers);
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
 #if DEBUG
@@ -371,7 +504,8 @@ namespace DotNetRestClient
             if (!doNotCountNextRequest)
                 DeleteLoadCount--;
             DoNotCountNextRequest = false;
-            return new Result(responseCode, isHttpError, isNetworkError, stringContent, error);
+            return new Result(url, "DELETE", default, authorizationToken, authHeaderSettings, responseCode, isHttpError,
+                isNetworkError, stringContent, error);
         }
 
         public static async Task<Result> Post<TForm>(string url, TForm data)
@@ -384,7 +518,20 @@ namespace DotNetRestClient
             return await Post(url, GetJsonContent(data), authorizationToken, BearerAuthHeaderSettings);
         }
 
-        public static async Task<Result> Post(string url, RequestContent content, string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        public static async Task<Result> Post<TForm>(string url, TForm data, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Post(url, GetJsonContent(data), authorizationToken, authHeaderSettings);
+        }
+
+        public static async Task<Result> Post(string url, RequestContent content, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Post(url, content, authorizationToken, authHeaderSettings, null);
+        }
+
+        public static async Task<Result> Post(string url, RequestContent content, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings, Dictionary<string, string> headers)
         {
 #if DEBUG
             uint id = GetNextDebugId();
@@ -401,6 +548,7 @@ namespace DotNetRestClient
                 PostLoadCount++;
             using (var webRequest = new HttpRequestMessage(HttpMethod.Post, url))
             {
+                SetHeaders(webRequest, headers);
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
 #if DEBUG
@@ -439,7 +587,8 @@ namespace DotNetRestClient
             if (!doNotCountNextRequest)
                 PostLoadCount--;
             DoNotCountNextRequest = false;
-            return new Result(responseCode, isHttpError, isNetworkError, stringContent, error);
+            return new Result(url, "POST", content, authorizationToken, authHeaderSettings, responseCode, isHttpError,
+                isNetworkError, stringContent, error);
         }
 
         public static async Task<Result> Patch<TForm>(string url, TForm data)
@@ -452,7 +601,20 @@ namespace DotNetRestClient
             return await Patch(url, GetJsonContent(data), authorizationToken, BearerAuthHeaderSettings);
         }
 
-        public static async Task<Result> Patch(string url, RequestContent content, string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        public static async Task<Result> Patch<TForm>(string url, TForm data, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Patch(url, GetJsonContent(data), authorizationToken, authHeaderSettings);
+        }
+
+        public static async Task<Result> Patch(string url, RequestContent content, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Patch(url, content, authorizationToken, authHeaderSettings, null);
+        }
+
+        public static async Task<Result> Patch(string url, RequestContent content, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings, Dictionary<string, string> headers)
         {
 #if DEBUG
             uint id = GetNextDebugId();
@@ -469,6 +631,7 @@ namespace DotNetRestClient
                 PatchLoadCount++;
             using (var webRequest = new HttpRequestMessage(HttpMethod.Patch, url))
             {
+                SetHeaders(webRequest, headers);
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
 #if DEBUG
@@ -507,7 +670,8 @@ namespace DotNetRestClient
             if (!doNotCountNextRequest)
                 PatchLoadCount--;
             DoNotCountNextRequest = false;
-            return new Result(responseCode, isHttpError, isNetworkError, stringContent, error);
+            return new Result(url, "PATCH", content, authorizationToken, authHeaderSettings, responseCode, isHttpError,
+                isNetworkError, stringContent, error);
         }
 
         public static async Task<Result> Put<TForm>(string url, TForm data)
@@ -520,7 +684,20 @@ namespace DotNetRestClient
             return await Put(url, GetJsonContent(data), authorizationToken, BearerAuthHeaderSettings);
         }
 
-        public static async Task<Result> Put(string url, RequestContent content, string authorizationToken, AuthHeaderSettings authHeaderSettings)
+        public static async Task<Result> Put<TForm>(string url, TForm data, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Put(url, GetJsonContent(data), authorizationToken, authHeaderSettings);
+        }
+
+        public static async Task<Result> Put(string url, RequestContent content, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings)
+        {
+            return await Put(url, content, authorizationToken, authHeaderSettings, null);
+        }
+
+        public static async Task<Result> Put(string url, RequestContent content, string authorizationToken,
+            AuthHeaderSettings authHeaderSettings, Dictionary<string, string> headers)
         {
 #if DEBUG
             uint id = GetNextDebugId();
@@ -537,6 +714,7 @@ namespace DotNetRestClient
                 PutLoadCount++;
             using (var webRequest = new HttpRequestMessage(HttpMethod.Put, url))
             {
+                SetHeaders(webRequest, headers);
                 if (!string.IsNullOrEmpty(authorizationToken))
                 {
 #if DEBUG
@@ -575,7 +753,8 @@ namespace DotNetRestClient
             if (!doNotCountNextRequest)
                 PutLoadCount--;
             DoNotCountNextRequest = false;
-            return new Result(responseCode, isHttpError, isNetworkError, stringContent, error);
+            return new Result(url, "PUT", content, authorizationToken, authHeaderSettings, responseCode, isHttpError,
+                isNetworkError, stringContent, error);
         }
 
         public static string GetQueryString(params KeyValuePair<string, string>[] parameters)
@@ -665,6 +844,33 @@ namespace DotNetRestClient
             }
         }
 
+        public static string GetNetworkErrorMessage(IResult result)
+        {
+            if (result.IsNetworkError)
+                return "Network Error";
+            try
+            {
+                Dictionary<string, object> objs =
+                    JsonConvert.DeserializeObject<Dictionary<string, object>>(result.StringContent,
+                        JsonSerializerSettings);
+                object tempObject;
+                if (objs.TryGetValue("error", out tempObject))
+                    return tempObject.ToString();
+                if (objs.TryGetValue("Error", out tempObject))
+                    return tempObject.ToString();
+                if (objs.TryGetValue("message", out tempObject))
+                    return tempObject.ToString();
+                if (objs.TryGetValue("Message", out tempObject))
+                    return tempObject.ToString();
+            }
+            catch
+            {
+                return GetNetworkErrorMessage(result.ResponseCode);
+            }
+
+            return "Unknow Error";
+        }
+
         public interface IResult
         {
             long ResponseCode { get; }
@@ -674,42 +880,69 @@ namespace DotNetRestClient
             string Error { get; }
         }
 
-        public struct Result : IResult
+        public class Result : IResult
         {
+            public string Url { get; private set; }
+            public string Method { get; private set; }
+            public RequestContent RequestContent { get; private set; }
+            public string AuthorizationToken { get; private set; }
+            public AuthHeaderSettings AuthHeaderSettings { get; private set; }
             public long ResponseCode { get; private set; }
             public bool IsHttpError { get; private set; }
             public bool IsNetworkError { get; private set; }
             public string StringContent { get; private set; }
             public string Error { get; private set; }
 
-            public Result(long responseCode, bool isHttpError, bool isNetworkError, string stringContent, string error)
+            public Result(string url, string method, RequestContent requestContent, string authorizationToken,
+                AuthHeaderSettings authHeaderSettings, long responseCode, bool isHttpError, bool isNetworkError,
+                string stringContent, string error)
             {
+                Url = url;
+                Method = method;
+                RequestContent = requestContent;
+                AuthorizationToken = authorizationToken;
+                AuthHeaderSettings = authHeaderSettings;
                 ResponseCode = responseCode;
                 IsHttpError = isHttpError;
                 IsNetworkError = isNetworkError;
                 StringContent = stringContent;
                 Error = error;
+                UpdateContent(stringContent);
                 if (IsHttpError && string.IsNullOrEmpty(Error))
-                    Error = GetNetworkErrorMessage(responseCode);
+                    Error = GetNetworkErrorMessage(this);
+            }
+
+            public Result(Result src) :
+                this(src.Url, src.Method, src.RequestContent, src.AuthorizationToken, src.AuthHeaderSettings,
+                    src.ResponseCode, src.IsHttpError, src.IsNetworkError, src.StringContent, src.Error)
+            {
+            }
+
+            protected virtual void UpdateContent(string stringContent)
+            {
             }
         }
 
-        public struct Result<T> : IResult
+        public class Result<T> : Result
         {
-            public long ResponseCode { get; private set; }
-            public bool IsHttpError { get; private set; }
-            public bool IsNetworkError { get; private set; }
-            public string StringContent { get; private set; }
-            public string Error { get; private set; }
             public T Content { get; private set; }
 
-            public Result(long responseCode, bool isHttpError, bool isNetworkError, string stringContent, string error)
+            public Result(string url, string method, RequestContent requestContent, string authorizationToken,
+                AuthHeaderSettings authHeaderSettings, long responseCode, bool isHttpError, bool isNetworkError,
+                string stringContent, string error) :
+                base(url, method, requestContent, authorizationToken, authHeaderSettings, responseCode, isHttpError,
+                    isNetworkError, stringContent, error)
             {
-                ResponseCode = responseCode;
-                StringContent = stringContent;
-                IsHttpError = isHttpError;
-                IsNetworkError = isNetworkError;
-                Error = error;
+            }
+
+            public Result(Result src) :
+                this(src.Url, src.Method, src.RequestContent, src.AuthorizationToken, src.AuthHeaderSettings,
+                    src.ResponseCode, src.IsHttpError, src.IsNetworkError, src.StringContent, src.Error)
+            {
+            }
+
+            protected override void UpdateContent(string stringContent)
+            {
                 Content = default;
                 if (!IsNetworkError)
                 {
@@ -720,11 +953,10 @@ namespace DotNetRestClient
                     catch (Exception ex)
                     {
                         // It may not able to deserialize
-                        Console.Error.WriteLine($"Can't deserialize content: {stringContent}, {ex}");
+                        Console.Error.WriteLine(
+                            $"Can't deserialize content: {stringContent}, from {Url} ({Method}), content: {RequestContent.Data} ({RequestContent.Type}), {ex}");
                     }
                 }
-                if (IsHttpError && string.IsNullOrEmpty(Error))
-                    Error = GetNetworkErrorMessage(responseCode);
             }
         }
     }
