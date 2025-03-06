@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DotNetRestClient
+namespace Insthync.DotNetRestClient
 {
     public class RestClient
     {
